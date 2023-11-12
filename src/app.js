@@ -88,6 +88,13 @@ App = {
     }
   },
 
+  createAssignment: async () => {
+    App.setLoading(true)
+    const content = $('#newAssignment').val()
+    await App.educationPage.createAssignment(content, {from: App.account})
+    window.location.reload()
+  },
+
   render: async () => {
     if (App.loading) {
         return

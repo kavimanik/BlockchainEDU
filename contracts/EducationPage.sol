@@ -11,6 +11,12 @@ contract EducationPage{
 
   mapping(uint => Assignment) public assignments;
 
+  event AssignmentCreated(
+    uint id,
+    string content,
+    bool completed
+  );
+
   constructor() public {
     createAssignment("New Assignment Created");
   }
@@ -18,6 +24,7 @@ contract EducationPage{
   function createAssignment(string memory _content) public {
     assignmentCount++;
     assignments[assignmentCount] = Assignment(assignmentCount, _content, false);
+    emit AssignmentCreated(assignmentCount, _content, false);
   }
 
 
