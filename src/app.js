@@ -74,7 +74,7 @@ App = {
       $newAssignmentTemplate.find('input')
                             .prop('name', assignmentId)
                             .prop('checked', assignmentCompleted)
-                            //.on('click', App.toggleCompleted)
+                            .on('click', App.toggleCompleted)
 
       // Put the task in the correct list
       if (assignmentCompleted) {
@@ -110,6 +110,13 @@ App = {
     
       // Update loading state
       App.setLoading(false)
+  },
+
+  toggleCompleted: async (e) => {
+    App.setLoading(true)
+    const assignmentId = e.target.name
+    await App.educationPage.toggleCompleted(assignmentId, {from: App.account})
+    window.location.reload()
   },
 
   setLoading: (boolean) => {
