@@ -11,6 +11,7 @@ App = {
     },
 
     // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
+    //the above link provides the following loadWeb3 function in order to load Web3 into our application
   loadWeb3: async () => {
     if (typeof web3 !== 'undefined') {
         App.web3Provider = web3.currentProvider
@@ -42,33 +43,32 @@ App = {
     }
   },
 
+  //load Account will load the account for the current user accessing the blockchain
   loadAccount: async () => {
     App.account = ethereum.selectedAddress;
   },
 
-  loadContract: async () => {
-    const educationPage = await $.getJSON('EducationPage.json')
-    App.contracts.EducationPage = TruffleContract(educationPage)
-    App.contracts.EducationPage.setProvider(App.web3Provider)
-
-    App.educationPage = await App.contracts.EducationPage.deployed()
-    console.log(educationPage)
+  //create Assignment creates an assignment object that was outlined in the EducationPage smart contract
+  createAssignment: async () => {
+    App.setLoading(true) //sets the loading state to true
+    const content = $('#newAssignment').val() //adds the assignment to the frontend
+    await App.educationPage.createAssignment(content, {from: App.account}) //adds the assignment to the blockchain
+    window.location.reload()
   },
 
+  //load all of the assignments from the blockchain onto the frontend
   renderAssignments: async () => {
-    // Load the total task count from the blockchain
-    const assignmentCount = await App.educationPage.assignmentCount()
+    const assignmentCount = await App.educationPage.assignmentCount() // get the total number of assignments from the blockchain
     const $assignmentTemplate = $('.assignmentTemplate')
 
-    // Render out each task with a new task template
+    // loop thru the number of assignments and load the relevent assignment data
     for (var i = 1; i <= assignmentCount; i++) {
-      // Fetch the task data from the blockchain
       const assignment = await App.educationPage.assignments(i)
       const assignmentId = assignment[0].toNumber()
       const assignmentContent = assignment[1]
       const assignmentCompleted = assignment[2]
 
-      // Create the html for the task
+      // create HTML with all of the assignment information
       const $newAssignmentTemplate = $assignmentTemplate.clone()
       $newAssignmentTemplate.find('.content').html(assignmentContent)
       $newAssignmentTemplate.find('input')
@@ -76,60 +76,69 @@ App = {
                             .prop('checked', assignmentCompleted)
                             .on('click', App.toggleCompleted)
 
-      // Put the task in the correct list
+      //if the assignment is completed add it to the list of completed assignments 
+      //otherwise add it to the list of uncompleted assignments
       if (assignmentCompleted) {
         $('#completedTAssignmentList').append($newAssignmentTemplate)
       } else {
         $('#assignmentList').append($newAssignmentTemplate)
       }
 
-      // Show the task
+      // show the assignments
       $newAssignmentTemplate.show()
     }
   },
 
-  createAssignment: async () => {
-    App.setLoading(true)
-    const content = $('#newAssignment').val()
-    await App.educationPage.createAssignment(content, {from: App.account})
-    window.location.reload()
+  //loads the contract which stores the information about the assignments
+  loadContract: async () => {
+    const educationPage = await $.getJSON('EducationPage.json') //get the smart contract
+    App.contracts.EducationPage = TruffleContract(educationPage)
+    App.contracts.EducationPage.setProvider(App.web3Provider)
+
+    App.educationPage = await App.contracts.EducationPage.deployed() //deploy the smart contract
+    console.log(educationPage)
   },
 
+  //render the assignmends on the page
   render: async () => {
+    //if the app is already loading then return to prevent double loading
     if (App.loading) {
         return
       }
   
-      // Update app loading state
+      // since we are now loading the assignments set the loading state to true
       App.setLoading(true)
   
-      // Render Account
       $('#account').html(App.account)
 
       await App.renderAssignments()
     
-      // Update loading state
+      // when we're doing loading the assignments set the loading state to false
       App.setLoading(false)
   },
 
-  toggleCompleted: async (e) => {
-    App.setLoading(true)
-    const assignmentId = e.target.name
-    await App.educationPage.toggleCompleted(assignmentId, {from: App.account})
-    window.location.reload()
-  },
-
+  //sets the loading state of the applcation
   setLoading: (boolean) => {
     App.loading = boolean
     const loader = $('#loader')
     const content = $('#content')
+    //if the app is loading the show the loader and hide the assignments
     if (boolean) {
       loader.show()
       content.hide()
+    //if its already loaded hide the loader and show the assignments
     } else {
       loader.hide()
       content.show()
     }
+  },
+
+  //function to mark an assignment as complete
+  toggleCompleted: async (e) => {
+    App.setLoading(true)
+    const assignmentId = e.target.name
+    await App.educationPage.toggleCompleted(assignmentId, {from: App.account}) //access the smart contract and change the state of the assignment
+    window.location.reload()
   }
 }
 
