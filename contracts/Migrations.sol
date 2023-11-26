@@ -1,5 +1,6 @@
 pragma solidity 0.5.16;
 
+//the following contract is boilerplate code necessary for our smart contracts to work properly
 contract Migrations {
   address public owner;
   uint public last_completed_migration;

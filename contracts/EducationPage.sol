@@ -42,9 +42,9 @@ contract EducationPage{
 
   //function to create assignment which adds assignment to mapping and increments count
   function createAssignment(string memory _content) public {
-    assignmentCount++;
     assignments[assignmentCount] = Assignment(assignmentCount, _content, false);
     emit AssignmentCreated(assignmentCount, _content, false);
+    assignmentCount++;
   }
 
 }
