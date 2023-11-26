@@ -4,6 +4,7 @@ contract EducationPage{
   //keeps track of the total number of assignments
   uint public assignmentCount = 0;
 
+  //contructor which creates an intial assignment when the smart contract is created
   constructor() public {
     createAssignment("New Assignment Created");
   }
